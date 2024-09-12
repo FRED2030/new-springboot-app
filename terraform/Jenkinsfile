@@ -42,7 +42,8 @@ pipeline {
             steps {
                 script {
                     dir("${WORKSPACE}/terraform") {
-                        sh 'terraform init' 
+                        // Add the -migrate-state flag if you expect a backend change
+                        sh 'terraform init -migrate-state' 
                     }
                 }
             }
@@ -62,7 +63,7 @@ pipeline {
             steps {
                 script {
                     dir("${WORKSPACE}/terraform") {
-                        sh 'terraform "${TERRAFORM_ACTION}" -auto-approve'
+                        sh 'terraform ${TERRAFORM_ACTION} -auto-approve'
                     }
                 }
             }
