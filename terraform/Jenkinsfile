@@ -42,7 +42,6 @@ pipeline {
             steps {
                 script {
                     dir("${WORKSPACE}/terraform") {
-                        // Add the -migrate-state flag if you expect a backend change
                         sh 'terraform init -migrate-state' 
                     }
                 }
