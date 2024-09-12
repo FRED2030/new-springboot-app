@@ -1,0 +1,31 @@
+{
+  "family": "springboot-app",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "executionRoleArn": "arn:aws:iam::870342665742:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::870342665742:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "springboot-app",
+      "image": "870342665742.dkr.ecr.us-east-1.amazonaws.com/springboot-ecr:V002",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8081,
+          "hostPort": 8081,
+          "protocol": "tcp"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/springboot-app",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}

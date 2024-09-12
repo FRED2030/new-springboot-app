@@ -1,0 +1,17 @@
+[
+  {
+    "name": "terraform-pipeline",
+    "repo": "https://github.com/dkojo/springboot-app-ecs.git",
+    "branch": "master",
+    "jenkinsfile": "terraform/Jenkinsfile"
+  },
+
+
+  {
+    "name": "continuous-integration-continuous-deployment-pipeline",
+    "repo": "https://github.com/dkojo/springboot-app-ecs.git",
+    "branch": "master",
+    "jenkinsfile": "continuous-integration-continuous-deployment/Jenkinsfile"
+  }
+
+]
