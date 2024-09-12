@@ -1,6 +1,6 @@
 resource "aws_iam_role_policy" "jenkins_cloudwatch_logs_policy" {
   name   = "jenkins-cloudwatch-logs-policy"
-  role   = "Jenkins-role"  # Replace with the actual role name if different
+  role   = "Jenkins-role"  
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
