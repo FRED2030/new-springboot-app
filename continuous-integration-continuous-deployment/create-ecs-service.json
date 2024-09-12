@@ -1,26 +1,26 @@
 {
-  "cluster": "springboot-ecs-cluster",
-  "serviceName": "springboot-ecs-service",
-  "taskDefinition": "arn:aws:ecs:us-east-1:870342665742:task-definition/springboot-app:52",
+  "cluster": "springboot-app-project-cluster",
+  "serviceName": "springboot-app-project-service",
+  "taskDefinition": "arn:aws:ecs:us-east-1:905418339917:task-definition/springboot-app-project:52",
   "desiredCount": 2,
   "launchType": "FARGATE",
   "platformVersion": "LATEST",
   "networkConfiguration": {
     "awsvpcConfiguration": {
       "subnets": [
-        "subnet-01c66f71f680b2182",
-        "subnet-0065a5b9acf97af02"
+        "subnet-0d25341a29cbc07a2",
+        "subnet-0da46f06268145220"
       ],
       "securityGroups": [
-        "sg-0f901c280976278b5"
+        "sg-08fa0792d95f6976a"
       ],
       "assignPublicIp": "ENABLED"
     }
   },
   "loadBalancers": [
     {
-      "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:870342665742:targetgroup/springboot-app-tg/1c5d3f246859f392",
-      "containerName": "springboot-app",
+      "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:905418339917:targetgroup/springboot-app-project-tg/98cddedb5cd2c42c",
+      "containerName": "springboot-cluster",
       "containerPort": 8081
     }
   ],

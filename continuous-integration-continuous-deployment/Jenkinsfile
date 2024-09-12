@@ -1,118 +1,113 @@
 pipeline {
     agent any
-    options {
-        timeout(time: 10, unit: 'MINUTES')
-    }
     parameters {
-        string(name: 'GITHUB_CREDENTIAL', defaultValue: 'github_creds', description: 'Github access credentials id')
-        string(name: 'GITHUB_BRANCH', defaultValue: 'master', description: 'Branch to build from')
-        string(name: 'GITHUB_REPO_URL', defaultValue: 'https://github.com/dkojo/springboot-app-ecs.git', description: 'Repository URL to build from')
+        string(name: 'BRANCH', defaultValue: 'main', description: 'Branch to build from')
+        string(name: 'REPO_URL', defaultValue: 'https://github.com/FRED2030/springboot-app-project.git', description: 'Repository URL to build from')
         string(name: 'VERSION', defaultValue: "V00${BUILD_ID}", description: 'Version of Docker image to be built, e.g., V001')
         string(name: 'TASK_DEF_JSON', defaultValue: 'continuous-integration-continuous-deployment/task-def.json', description: 'Path to the task definition JSON file')
         string(name: 'CREATE_SERVICE_FILE', defaultValue: 'continuous-integration-continuous-deployment/create-ecs-service.json', description: 'Path to the create service JSON file')
         string(name: 'UPDATE_SERVICE_FILE', defaultValue: 'continuous-integration-continuous-deployment/update-ecs-service.json', description: 'Path to the update service JSON file')
-        string(name: 'SERVICE_NAME', defaultValue: 'springboot-ecs-service', description: 'ECS Service Name')
-        string(name: 'ECS_CLUSTER_NAME', defaultValue: 'springboot-ecs-cluster', description: 'ECS Cluster Name')
-        string(name: 'ECR_REPO', defaultValue: 'springboot-ecr', description: 'ECR repo Name')
+        string(name: 'SERVICE_NAME', defaultValue: 'springboot-app-project-ecs-service', description: 'ECS Service Name')
+        string(name: 'ECS_CLUSTER_NAME', defaultValue: 'springboot-app-project-ecs-cluster', description: 'ECS Cluster Name')
     }
 
     environment {
-        GITHUB_CREDENTIAL = "${params.GITHUB_CREDENTIAL}"
-        GITHUB_BRANCH = "${params.GITHUB_BRANCH}"
-        GITHUB_REPO_URL = "${params.GITHUB_REPO_URL}"
+        BRANCH = "${params.BRANCH}"
+        REPO_URL = "${params.REPO_URL}"
         VERSION = "${params.VERSION}"
         TASK_DEF_JSON = "${params.TASK_DEF_JSON}"
         CREATE_SERVICE_FILE = "${params.CREATE_SERVICE_FILE}"
         UPDATE_SERVICE_FILE = "${params.UPDATE_SERVICE_FILE}"
         SERVICE_NAME = "${params.SERVICE_NAME}"
         ECS_CLUSTER_NAME = "${params.ECS_CLUSTER_NAME}"
-        ECR_REPO = "${params.ECR_REPO}"
     }
 
     stages {
-
         stage('Clean Workspace') {
             steps {
                 cleanWs()
             }
         }
-        
+
         stage('Clone GitHub Repo') {
             steps {
-                git branch: "${GITHUB_BRANCH}", credentialsId: "${GITHUB_CREDENTIAL}", url: "${GITHUB_REPO_URL}"
-            }
-        }
-        
-        
-        stage('Application Build And Test') {
-            steps {
-                sh 'chmod +x ./mvnw'
-                sh './mvnw clean install'
-                sh './mvnw test'
+                git branch: "${BRANCH}", credentialsId: 'github_creds', url: "${REPO_URL}"
             }
         }
 
- /*       stage('SonarQube Analysis') {
+        stage('Building Docker Image') {
             steps {
-                script {
-                    withSonarQubeEnv("${SONARQUBE_SERVER_NAME}") {
-                        sh './mvnw sonar:sonar'
-                    }
-                }
+                sh "docker build -t springboot-app-project-html-image ."
             }
         }
-   */    
-             
-        stage('Docker Build and Push') {
+
+        stage('Push To Elastic Container Registry') {
             steps {
                 script {
+                    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                         sh """
-                        ./mvnw clean install
-                        aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 870342665742.dkr.ecr.us-east-1.amazonaws.com
-                        docker build -t springboot-app-image .
-                        docker tag springboot-app-image 870342665742.dkr.ecr.us-east-1.amazonaws.com/${ECR_REPO}:${VERSION}
-                        docker push 870342665742.dkr.ecr.us-east-1.amazonaws.com/${ECR_REPO}:${VERSION}
+                            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 870342665742.dkr.ecr.us-east-1.amazonaws.com
+                            docker tag marketvector-html-image 870342665742.dkr.ecr.us-east-1.amazonaws.com/marketvector-app-repo:${VERSION}
+                            docker push 870342665742.dkr.ecr.us-east-1.amazonaws.com/marketvector-app-repo:${VERSION}
                         """
                     }
                 }
             }
-        
-       stage('Register Task Definition') {
-            steps {
-                script {
-                    def taskDefArn = sh(script: """
-                        aws ecs register-task-definition --cli-input-json file://${TASK_DEF_JSON} --query 'taskDefinition.taskDefinitionArn' --output text
-                    """, returnStdout: true).trim()
-
-                    echo "Task Definition ARN: ${taskDefArn}"
-
-                    def createServiceJson = readFile(file: CREATE_SERVICE_FILE)
-                    createServiceJson = createServiceJson.replaceAll(/"taskDefinition": "arn:aws:ecs:[^"]+"/, "\"taskDefinition\": \"${taskDefArn}\"")
-                    writeFile(file: CREATE_SERVICE_FILE, text: createServiceJson)
-
-                    def updateServiceJson = readFile(file: UPDATE_SERVICE_FILE)
-                    updateServiceJson = updateServiceJson.replaceAll(/"taskDefinition": "arn:aws:ecs:[^"]+"/, "\"taskDefinition\": \"${taskDefArn}\"")
-                    writeFile(file: UPDATE_SERVICE_FILE, text: updateServiceJson)
-                }
-            }
         }
+
+       // stage('Update Task Definition') {
+         //   steps {
+           //     script {
+             //       withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+               //         def image = "870342665742.dkr.ecr.us-east-1.amazonaws.com/marketvector-app-repo:${VERSION}"
+                 //       def taskDefJson = readFile(file: TASK_DEF_JSON)
+                   //     taskDefJson = taskDefJson.replaceAll(/"image": "870342665742.dkr.ecr.us-east-1.amazonaws.com\/marketvector-app-repo:[^"]+"/, "\"image\": \"${image}\"")
+                     //   writeFile(file: TASK_DEF_JSON, text: taskDefJson)
+       //             }
+         //       }
+           // }
+        //}
+
+        //stage('Register Task Definition') //{
+          //  steps {
+            //    script {
+         //           withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+           //             def taskDefArn = sh(script: """
+             //               aws ecs register-task-definition --cli-input-json file://${TASK_DEF_JSON} --query 'taskDefinition.taskDefinitionArn' --output text
+              //          """, returnStdout: true).trim()
+//
+  //                      echo "Task Definition ARN: ${taskDefArn}"
+//
+  //                      def createServiceJson = readFile(file: CREATE_SERVICE_FILE)
+    //                    createServiceJson = createServiceJson.replaceAll(/"taskDefinition": "arn:aws:ecs:[^"]+"/, "\"taskDefinition\": \"${taskDefArn}\"")
+      //                  writeFile(file: CREATE_SERVICE_FILE, text: createServiceJson)
+//
+  //                      def updateServiceJson = readFile(file: UPDATE_SERVICE_FILE)
+    //                    updateServiceJson = updateServiceJson.replaceAll(/"taskDefinition": "arn:aws:ecs:[^"]+"/, "\"taskDefinition\": \"${taskDefArn}\"")
+      //                  writeFile(file: UPDATE_SERVICE_FILE, text: updateServiceJson)
+                    //}
+          //      //}
+            //}
+       // }
 
         stage('Stop all running tasks') {
             steps {
                 script {
-                    def serviceExists = sh(script: """
-                        aws ecs describe-services --cluster ${ECS_CLUSTER_NAME} --services ${SERVICE_NAME} --query "services[?status=='ACTIVE'].[serviceName]" --output text
-                    """, returnStdout: true).trim()
+                    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        def serviceExists = sh(script: """
+                            aws ecs describe-services --cluster ${ECS_CLUSTER_NAME} --services ${SERVICE_NAME} --query "services[?status=='ACTIVE'].[serviceName]" --output text
+                        """, returnStdout: true).trim()
 
-                    if (serviceExists) {
-                        sh """
-                        tasks=\$(aws ecs list-tasks --cluster ${ECS_CLUSTER_NAME} --service-name ${SERVICE_NAME} --desired-status RUNNING --query taskArns --output text)
-                        for task in \$tasks; do
-                            aws ecs stop-task --cluster ${ECS_CLUSTER_NAME} --task \$task
-                        done
-                        """
-                    } else {
-                        echo "Service ${SERVICE_NAME} does not exist. Skipping stop tasks step."
+                        if (serviceExists) {
+                            sh """
+                                tasks=\$(aws ecs list-tasks --cluster ${ECS_CLUSTER_NAME} --service-name ${SERVICE_NAME} --desired-status RUNNING --query taskArns --output text)
+                                for task in \$tasks; do
+                                    aws ecs stop-task --cluster ${ECS_CLUSTER_NAME} --task \$task
+                                done
+                            """
+                        } else {
+                            echo "Service ${SERVICE_NAME} does not exist. Skipping stop tasks step."
+                        }
                     }
                 }
             }
@@ -121,45 +116,48 @@ pipeline {
         stage('Wait for Tasks to Stop') {
             steps {
                 script {
-                    def serviceExists = sh(script: """
-                        aws ecs describe-services --cluster ${ECS_CLUSTER_NAME} --services ${SERVICE_NAME} --query "services[?status=='ACTIVE'].[serviceName]" --output text
-                    """, returnStdout: true).trim()
+                    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        def serviceExists = sh(script: """
+                            aws ecs describe-services --cluster ${ECS_CLUSTER_NAME} --services ${SERVICE_NAME} --query "services[?status=='ACTIVE'].[serviceName]" --output text
+                        """, returnStdout: true).trim()
 
-                    if (serviceExists) {
-                        timeout(time: 5, unit: 'MINUTES') {
-                            waitUntil {
-                                def tasks = sh(script: """
-                                    aws ecs list-tasks --cluster ${ECS_CLUSTER_NAME} --service-name ${SERVICE_NAME} --desired-status RUNNING --query taskArns --output text
-                                """, returnStdout: true).trim()
+                        if (serviceExists) {
+                            timeout(time: 5, unit: 'MINUTES') {
+                                waitUntil {
+                                    def tasks = sh(script: """
+                                        aws ecs list-tasks --cluster ${ECS_CLUSTER_NAME} --service-name ${SERVICE_NAME} --desired-status RUNNING --query taskArns --output text
+                                    """, returnStdout: true).trim()
 
-                                return tasks == null || tasks.isEmpty()
+                                    return tasks == null || tasks.isEmpty()
+                                }
                             }
+                        } else {
+                            echo "Service ${SERVICE_NAME} does not exist. Skipping wait for tasks to stop step."
                         }
-                    } else {
-                        echo "Service ${SERVICE_NAME} does not exist. Skipping wait for tasks to stop step."
                     }
                 }
             }
         }
 
-        stage('Check and Update ECS Service') {
-            steps {
-                script {
-                    def clientToken = UUID.randomUUID().toString()
-                    sh """
-                    SERVICE_EXISTS=\$(aws ecs describe-services --cluster ${ECS_CLUSTER_NAME} --services ${SERVICE_NAME} --query "services[?status=='ACTIVE'].[serviceName]" --output text)
-
-                    if [ -z "\$SERVICE_EXISTS" ]; then
-                      echo "Service ${SERVICE_NAME} does not exist. Creating service..."
-                      aws ecs create-service --cli-input-json file://${CREATE_SERVICE_FILE} --client-token ${clientToken}
-                    else
-                      echo "Service ${SERVICE_NAME} exists. Updating service..."
-                      aws ecs update-service --cli-input-json file://${UPDATE_SERVICE_FILE}
-                    fi
-                    """
-                }
-            }
-        }
-
-    }
-}
+   //     stage('Check and Update ECS Service') {
+     //       steps {
+       //         script {
+         //           withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+           //             def clientToken = UUID.randomUUID().toString()
+             //           sh """
+               //             SERVICE_EXISTS=\$(aws ecs describe-services --cluster ${ECS_CLUSTER_NAME} --services ${SERVICE_NAME} --query "services[?status=='ACTIVE'].[serviceName]" --output text)
+//
+  //                          if [ -z "\$SERVICE_EXISTS" ]; then
+    //                          echo "Service ${SERVICE_NAME} does not exist. Creating service..."
+      //                        aws ecs create-service --cli-input-json file://${CREATE_SERVICE_FILE} --client-token ${clientToken}
+                            else
+        //                      echo "Service ${SERVICE_NAME} exists. Updating service..."
+          //                    aws ecs update-service --cli-input-json file://${UPDATE_SERVICE_FILE}
+                            fi
+            //            """
+              //      }
+                //}
+           // }
+        //}
+    //}
+//}

@@ -6,8 +6,8 @@ pipeline {
 
     parameters {
         string(name: 'GITHUB_CREDENTIAL', defaultValue: 'github_creds', description: 'Github access credentials id')
-        string(name: 'GITHUB_REPO_URL', defaultValue: 'https://github.com/dkojo/springboot-app-ecs.git', description: 'Github repository url')
-        string(name: 'GITHUB_BRANCH', defaultValue: 'master', description: 'Github branch for your build')
+        string(name: 'GITHUB_REPO_URL', defaultValue: 'https://github.com/FRED2030/springboot-ecs-app.git', description: 'Github repository url')
+        string(name: 'GITHUB_BRANCH', defaultValue: 'main', description: 'Github branch for your build')
         choice(name: 'TERRAFORM_ACTION', choices: ['', 'apply', 'destroy'], description: 'Select Terraform action: Apply or Destroy')
     }
 
@@ -42,30 +42,31 @@ pipeline {
                 script {
                     // Change into the Terraform code directory
                     dir("${WORKSPACE}/terraform") {
-           
+                        withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                             sh 'terraform init' 
                         }
                     }
                 }
             }
-        
+        }
 
         stage('Terraform Plan') {
             steps {
                 script {
                     dir("${WORKSPACE}/terraform") {
-         
+                        withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                             sh 'terraform plan'
                         }
                      }
                  }
              }
-         
+         }
         
         stage('Terraform Apply Or Destroy') {
             steps {
                 script {
                     dir("${WORKSPACE}/terraform") {
+                        withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                             sh 'terraform "${TERRAFORM_ACTION}" -auto-approve'
                            }
                         }
@@ -73,4 +74,4 @@ pipeline {
                 }
             }
         }
-    
+    }

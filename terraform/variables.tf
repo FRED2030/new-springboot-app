@@ -7,25 +7,25 @@ variable "aws_region" {
 variable "vpc_id" {
   description = "The ID of the VPC where the ECS cluster will be deployed"    
   type        = string
-  default     = "vpc-02a4464202fe17b09"
+  default     = "vpc-0c5c888a629138221"
 }
 
 variable "subnet_ids" {
   description = "A list of subnet IDs where the ECS services will be deployed"
   type        = list(string)
-  default     = ["subnet-01c66f71f680b2182", "subnet-0065a5b9acf97af02"]       
+  default     = ["subnet-0d25341a29cbc07a2","subnet-0da46f06268145220"]       
 }
 
 variable "cluster_name" {
   description = "The name of the ECS cluster"
   type        = string
-  default     = "springboot-ecs-cluster"
+  default     = "springboot-cluster"
 }
 
 variable "service_name" {
   description = "The name of the ECS service"
   type        = string
-  default     = "springboot-ecs-service"
+  default     = "sprinboot-service"
 }
 
 variable "container_port" {
