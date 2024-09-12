@@ -1,21 +1,14 @@
-resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "ecsTaskExecutionRole"
-
-  assume_role_policy = jsonencode({
+resource "aws_iam_role_policy" "jenkins_cloudwatch_logs_policy" {
+  name   = "jenkins-cloudwatch-logs-policy"
+  role   = "Jenkins-role"  # Replace with the actual role name if different
+  policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
-        }
+        Effect   = "Allow"
+        Action   = "logs:ListTagsForResource"
+        Resource = "arn:aws:logs:us-east-1:905418339917:log-group:/ecs/new-springboot-app"
       }
     ]
   })
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_task_execution_policy_attachment" {
-  role       = aws_iam_role.ecs_task_execution_role.name
-  policy_arn  = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
