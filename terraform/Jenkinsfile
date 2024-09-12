@@ -18,7 +18,7 @@ pipeline {
         TERRAFORM_ACTION = "${params.TERRAFORM_ACTION}" 
     }
 
-    stages {
+    
         stage("Validate Parameters") {
             steps {
                 script {
@@ -60,7 +60,7 @@ pipeline {
                      }
                  }
              }
-         }
+         
         
         stage('Terraform Apply Or Destroy') {
             steps {
@@ -72,6 +72,6 @@ pipeline {
                         }
                     }
                 }
-            }
-        }
-    }
+            
+        
+    
