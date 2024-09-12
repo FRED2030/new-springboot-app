@@ -2,13 +2,13 @@ pipeline {
     agent any
     parameters {
         string(name: 'BRANCH', defaultValue: 'main', description: 'Branch to build from')
-        string(name: 'REPO_URL', defaultValue: 'https://github.com/FRED2030/springboot-app-project.git', description: 'Repository URL to build from')
+        string(name: 'REPO_URL', defaultValue: 'https://github.com/FRED2030/new-springboot-app.git', description: 'Repository URL to build from')
         string(name: 'VERSION', defaultValue: "V00${BUILD_ID}", description: 'Version of Docker image to be built, e.g., V001')
         string(name: 'TASK_DEF_JSON', defaultValue: 'continuous-integration-continuous-deployment/task-def.json', description: 'Path to the task definition JSON file')
         string(name: 'CREATE_SERVICE_FILE', defaultValue: 'continuous-integration-continuous-deployment/create-ecs-service.json', description: 'Path to the create service JSON file')
         string(name: 'UPDATE_SERVICE_FILE', defaultValue: 'continuous-integration-continuous-deployment/update-ecs-service.json', description: 'Path to the update service JSON file')
-        string(name: 'SERVICE_NAME', defaultValue: 'springboot-app-project-ecs-service', description: 'ECS Service Name')
-        string(name: 'ECS_CLUSTER_NAME', defaultValue: 'springboot-app-project-ecs-cluster', description: 'ECS Cluster Name')
+        string(name: 'SERVICE_NAME', defaultValue: 'springboot-ecs-service', description: 'ECS Service Name')
+        string(name: 'ECS_CLUSTER_NAME', defaultValue: 'springboot-cluster', description: 'ECS Cluster Name')
     }
 
     environment {

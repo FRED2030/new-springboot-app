@@ -8,8 +8,8 @@
   "taskRoleArn": "arn:aws:iam::905418339917:role/ecsTaskExecutionRole",
   "containerDefinitions": [
     {
-      "name": "springboot-app-project-app",
-      "image": "905418339917.dkr.ecr.us-east-1.amazonaws.com/springboot-app-project-app-repo:V001",
+      "name": "new-springboot-app",
+      "image": "905418339917.dkr.ecr.us-east-1.amazonaws.com/new-springboot-app-repo:V001",
       "essential": true,
       "portMappings": [
         {
@@ -21,7 +21,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/springboot-app-project-app",
+          "awslogs-group": "/ecs/new-springboot-app",
           "awslogs-region": "us-east-1",
           "awslogs-stream-prefix": "ecs"
         }

@@ -1,8 +1,8 @@
 terraform {
   backend "s3" {
-    bucket         = "springboot-app-project-s3-bucket"
+    bucket         = "new-springboot-app-s3-bucket"
     key            = "terraform_statefile"
     region         = "us-east-1"
-    dynamodb_table = "springboot-app-project-DynamoDB"
+    dynamodb_table = "new-springboot-app-DynamoDB"
   }
 }

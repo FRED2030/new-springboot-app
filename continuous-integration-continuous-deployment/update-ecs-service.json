@@ -18,7 +18,7 @@
   "loadBalancers": [
     {
       "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:905418339917:targetgroup/sprinboot-ecs-app-tg/98cddedb5cd2c42c",
-      "containerName": "springboot-app-project-cluster-app",
+      "containerName": "springboot-cluster",
       "containerPort": 8081
     }
   ],
