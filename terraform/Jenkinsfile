@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    
+
     options {
         timeout(time: 10, unit: 'MINUTES')
     }
@@ -29,7 +29,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage("Checkout Code From GitHub") {
             steps {
                 script {
@@ -41,11 +41,8 @@ pipeline {
         stage('Terraform Init') {
             steps {
                 script {
-                    // Change into the Terraform code directory
                     dir("${WORKSPACE}/terraform") {
-                        // withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                            sh 'terraform init' 
-                        }
+                        sh 'terraform init' 
                     }
                 }
             }
@@ -55,9 +52,7 @@ pipeline {
             steps {
                 script {
                     dir("${WORKSPACE}/terraform") {
-                        // withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                            sh 'terraform plan'
-                        }
+                        sh 'terraform plan'
                     }
                 }
             }
@@ -67,9 +62,10 @@ pipeline {
             steps {
                 script {
                     dir("${WORKSPACE}/terraform") {
-                        // withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                            sh 'terraform "${TERRAFORM_ACTION}" -auto-approve'
-                        }
+                        sh 'terraform "${TERRAFORM_ACTION}" -auto-approve'
                     }
                 }
             }
+        }
+    }
+}
