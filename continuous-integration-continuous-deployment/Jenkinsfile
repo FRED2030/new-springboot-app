@@ -35,9 +35,9 @@ pipeline {
             }
         }
 
-        stage('Building Docker Image') {
+        stage('Build Docker Image') {
             steps {
-                sh "docker build -t springboot-app-project-html-image ."
+                sh "docker build -t new-springboot-app-html-image ."
             }
         }
 
@@ -47,7 +47,7 @@ pipeline {
                     withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                         sh """
                             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 905418339917.dkr.ecr.us-east-1.amazonaws.com
-                            docker tag new-springboot-app-html-image 905418339917.dkr.ecr.us-east-1.amazonaws.com/new-springboot-app-app-repo:${VERSION}
+                            docker tag springboot-app-project-html-image 905418339917.dkr.ecr.us-east-1.amazonaws.com/new-springboot-app-app-repo:${VERSION}
                             docker push 905418339917.dkr.ecr.us-east-1.amazonaws.com/new-springboot-app-app-repo:${VERSION}
                         """
                     }
@@ -55,40 +55,40 @@ pipeline {
             }
         }
 
-       // stage('Update Task Definition') {
-         //   steps {
-           //     script {
-             //       withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-               //         def image = "905418339917.dkr.ecr.us-east-1.amazonaws.com/new-springboot-app-app-repo:${VERSION}"
-                 //       def taskDefJson = readFile(file: TASK_DEF_JSON)
-                   //     taskDefJson = taskDefJson.replaceAll(/"image": "905418339917.dkr.ecr.us-east-1.amazonaws.com\/new-springboot-app-app-repo:[^"]+"/, "\"image\": \"${image}\"")
-                     //   writeFile(file: TASK_DEF_JSON, text: taskDefJson)
-       //             }
-         //       }
-           // }
-        //}
+        stage('Update Task Definition') {
+            steps {
+                script {
+                    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        def image = "905418339917.dkr.ecr.us-east-1.amazonaws.com/new-springboot-app-app-repo:${VERSION}"
+                        def taskDefJson = readFile(file: TASK_DEF_JSON)
+                        taskDefJson = taskDefJson.replaceAll(/"image": "905418339917.dkr.ecr.us-east-1.amazonaws.com\/new-springboot-app-app-repo:[^"]+"/, "\"image\": \"${image}\"")
+                        writeFile(file: TASK_DEF_JSON, text: taskDefJson)
+                    }
+                }
+            }
+        }
 
-        //stage('Register Task Definition') //{
-          //  steps {
-            //    script {
-         //           withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-           //             def taskDefArn = sh(script: """
-             //               aws ecs register-task-definition --cli-input-json file://${TASK_DEF_JSON} --query 'taskDefinition.taskDefinitionArn' --output text
-              //          """, returnStdout: true).trim()
-//
-  //                      echo "Task Definition ARN: ${taskDefArn}"
-//
-  //                      def createServiceJson = readFile(file: CREATE_SERVICE_FILE)
-    //                    createServiceJson = createServiceJson.replaceAll(/"taskDefinition": "arn:aws:ecs:[^"]+"/, "\"taskDefinition\": \"${taskDefArn}\"")
-      //                  writeFile(file: CREATE_SERVICE_FILE, text: createServiceJson)
-//
-  //                      def updateServiceJson = readFile(file: UPDATE_SERVICE_FILE)
-    //                    updateServiceJson = updateServiceJson.replaceAll(/"taskDefinition": "arn:aws:ecs:[^"]+"/, "\"taskDefinition\": \"${taskDefArn}\"")
-      //                  writeFile(file: UPDATE_SERVICE_FILE, text: updateServiceJson)
-                    //}
-          //      //}
-            //}
-       // }
+        stage('Register Task Definition') {
+            steps {
+                script {
+                    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        def taskDefArn = sh(script: """
+                            aws ecs register-task-definition --cli-input-json file://${TASK_DEF_JSON} --query 'taskDefinition.taskDefinitionArn' --output text
+                        """, returnStdout: true).trim()
+
+                        echo "Task Definition ARN: ${taskDefArn}"
+
+                        def createServiceJson = readFile(file: CREATE_SERVICE_FILE)
+                        createServiceJson = createServiceJson.replaceAll(/"taskDefinition": "arn:aws:ecs:[^"]+"/, "\"taskDefinition\": \"${taskDefArn}\"")
+                        writeFile(file: CREATE_SERVICE_FILE, text: createServiceJson)
+
+                        def updateServiceJson = readFile(file: UPDATE_SERVICE_FILE)
+                        updateServiceJson = updateServiceJson.replaceAll(/"taskDefinition": "arn:aws:ecs:[^"]+"/, "\"taskDefinition\": \"${taskDefArn}\"")
+                        writeFile(file: UPDATE_SERVICE_FILE, text: updateServiceJson)
+                    }
+                }
+            }
+        }
 
         stage('Stop all running tasks') {
             steps {
@@ -139,25 +139,25 @@ pipeline {
             }
         }
 
-   //     stage('Check and Update ECS Service') {
-     //       steps {
-       //         script {
-         //           withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-           //             def clientToken = UUID.randomUUID().toString()
-             //           sh """
-               //             SERVICE_EXISTS=\$(aws ecs describe-services --cluster ${ECS_CLUSTER_NAME} --services ${SERVICE_NAME} --query "services[?status=='ACTIVE'].[serviceName]" --output text)
-//
-  //                          if [ -z "\$SERVICE_EXISTS" ]; then
-    //                          echo "Service ${SERVICE_NAME} does not exist. Creating service..."
-      //                        aws ecs create-service --cli-input-json file://${CREATE_SERVICE_FILE} --client-token ${clientToken}
+        stage('Check and Update ECS Service') {
+            steps {
+                script {
+                    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        def clientToken = UUID.randomUUID().toString()
+                        sh """
+                            SERVICE_EXISTS=\$(aws ecs describe-services --cluster ${ECS_CLUSTER_NAME} --services ${SERVICE_NAME} --query "services[?status=='ACTIVE'].[serviceName]" --output text)
+
+                            if [ -z "\$SERVICE_EXISTS" ]; then
+                                echo "Service ${SERVICE_NAME} does not exist. Creating service..."
+                                aws ecs create-service --cli-input-json file://${CREATE_SERVICE_FILE} --client-token ${clientToken}
                             else
-        //                      echo "Service ${SERVICE_NAME} exists. Updating service..."
-          //                    aws ecs update-service --cli-input-json file://${UPDATE_SERVICE_FILE}
+                                echo "Service ${SERVICE_NAME} exists. Updating service..."
+                                aws ecs update-service --cli-input-json file://${UPDATE_SERVICE_FILE}
                             fi
-            //            """
-              //      }
-                //}
-           // }
-        //}
-    //}
-//}
+                        """
+                    }
+                }
+            }
+        }
+    }
+}
