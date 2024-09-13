@@ -42,20 +42,6 @@ pipeline {
         }
 
         stage('Push To Elastic Container Registry') {
-            steps {
-                script {
-                    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                        sh """
-                            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 905418339917.dkr.ecr.us-east-1.amazonaws.com
-                            docker tag new-springboot-app-html-image 905418339917.dkr.ecr.us-east-1.amazonaws.com/new-springboot-app-repo:${VERSION}
-                            docker push 905418339917.dkr.ecr.us-east-1.amazonaws.com/new-springboot-app-repo:${VERSION}
-                        """
-                    }
-                }
-            }
-        }
-
-        stage('Push To Elastic Container Registry') {
     steps {
         script {
             withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
