@@ -1,6 +1,6 @@
 # Define the IAM Role
 resource "aws_iam_role" "jenkins_role" {
-  name = "Jenkins-role"
+  name = "new-Jenkins-role"
   
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
