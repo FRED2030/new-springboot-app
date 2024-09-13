@@ -35,28 +35,46 @@ pipeline {
             }
         }
 
+        stage('Build JAR') {
+            steps {
+                sh 'mvn clean package'  // Make sure this creates target/blog-0.0.1-SNAPSHOT.jar
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t new-springboot-app-html-image ."
+                script {
+                    sh 'docker build -t new-springboot-app-html-image .'
+                }
             }
         }
 
         stage('Push To Elastic Container Registry') {
-    steps {
-        script {
-            withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                echo "Logging into ECR"
-                sh """
-                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 905418339917.dkr.ecr.us-east-1.amazonaws.com
-                    echo "Tagging image with version: ${VERSION}"
-                    docker tag new-springboot-app-html-image 905418339917.dkr.ecr.us-east-1.amazonaws.com/new-springboot-app-repo:${VERSION}
-                    echo "Pushing image to ECR"
-                    docker push 905418339917.dkr.ecr.us-east-1.amazonaws.com/new-springboot-app-repo:${VERSION}
-                """
+            steps {
+                script {
+                    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        sh """
+                            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 905418339917.dkr.ecr.us-east-1.amazonaws.com
+                            docker tag new-springboot-app-html-image 905418339917.dkr.ecr.us-east-1.amazonaws.com/new-springboot-app-repo:${VERSION}
+                            docker push 905418339917.dkr.ecr.us-east-1.amazonaws.com/new-springboot-app-repo:${VERSION}
+                        """
+                    }
+                }
             }
         }
-    }
-}
+
+        stage('Update Task Definition') {
+            steps {
+                script {
+                    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        def image = "905418339917.dkr.ecr.us-east-1.amazonaws.com/new-springboot-app-repo:${VERSION}"
+                        def taskDefJson = readFile(file: TASK_DEF_JSON)
+                        taskDefJson = taskDefJson.replaceAll(/"image": "905418339917.dkr.ecr.us-east-1.amazonaws.com\/new-springboot-app-repo:[^"]+"/, "\"image\": \"${image}\"")
+                        writeFile(file: TASK_DEF_JSON, text: taskDefJson)
+                    }
+                }
+            }
+        }
 
         stage('Register Task Definition') {
             steps {

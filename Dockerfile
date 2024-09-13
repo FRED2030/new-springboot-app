@@ -1,5 +1,14 @@
+# Use OpenJDK base image
 FROM openjdk:17
-VOLUME /tmp
-ADD target/blog-0.0.1-SNAPSHOT.jar blog-0.0.1-SNAPSHOT.jar
+
+# Create a directory for the application
+WORKDIR /app
+
+# Copy the JAR file into the container
+COPY target/blog-0.0.1-SNAPSHOT.jar blog-0.0.1-SNAPSHOT.jar
+
+# Expose the port the app runs on
 EXPOSE 8081
-ENTRYPOINT ["java","-jar","blog-0.0.1-SNAPSHOT.jar"]
+
+# Define the command to run the application
+ENTRYPOINT ["java", "-jar", "blog-0.0.1-SNAPSHOT.jar"]
