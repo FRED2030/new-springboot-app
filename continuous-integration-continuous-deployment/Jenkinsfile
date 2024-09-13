@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'maven:3.8.6-openjdk-17' // Maven Docker image with JDK 17
+            image 'maven:3.8.6-openjdk-17'  // Use Maven Docker image with JDK 17
         }
     }
     parameters {
@@ -41,7 +41,7 @@ pipeline {
 
         stage('Build JAR') {
             steps {
-                sh 'mvn clean package'  // Maven should be available in this Docker container
+                sh 'mvn clean package'
             }
         }
 
