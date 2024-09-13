@@ -46,9 +46,9 @@ pipeline {
                 script {
                     withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                         sh """
-                            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 870342665742.dkr.ecr.us-east-1.amazonaws.com
-                            docker tag marketvector-html-image 870342665742.dkr.ecr.us-east-1.amazonaws.com/marketvector-app-repo:${VERSION}
-                            docker push 870342665742.dkr.ecr.us-east-1.amazonaws.com/marketvector-app-repo:${VERSION}
+                            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 905418339917.dkr.ecr.us-east-1.amazonaws.com
+                            docker tag new-springboot-app-html-image 905418339917.dkr.ecr.us-east-1.amazonaws.com/new-springboot-app-app-repo:${VERSION}
+                            docker push 905418339917.dkr.ecr.us-east-1.amazonaws.com/new-springboot-app-app-repo:${VERSION}
                         """
                     }
                 }
@@ -59,9 +59,9 @@ pipeline {
          //   steps {
            //     script {
              //       withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws_creds', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-               //         def image = "870342665742.dkr.ecr.us-east-1.amazonaws.com/marketvector-app-repo:${VERSION}"
+               //         def image = "905418339917.dkr.ecr.us-east-1.amazonaws.com/new-springboot-app-app-repo:${VERSION}"
                  //       def taskDefJson = readFile(file: TASK_DEF_JSON)
-                   //     taskDefJson = taskDefJson.replaceAll(/"image": "870342665742.dkr.ecr.us-east-1.amazonaws.com\/marketvector-app-repo:[^"]+"/, "\"image\": \"${image}\"")
+                   //     taskDefJson = taskDefJson.replaceAll(/"image": "905418339917.dkr.ecr.us-east-1.amazonaws.com\/new-springboot-app-app-repo:[^"]+"/, "\"image\": \"${image}\"")
                      //   writeFile(file: TASK_DEF_JSON, text: taskDefJson)
        //             }
          //       }
