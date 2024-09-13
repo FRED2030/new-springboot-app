@@ -1,5 +1,9 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'maven:3.8.6-openjdk-17' // Maven Docker image with JDK 17
+        }
+    }
     parameters {
         string(name: 'BRANCH', defaultValue: 'main', description: 'Branch to build from')
         string(name: 'REPO_URL', defaultValue: 'https://github.com/FRED2030/new-springboot-app.git', description: 'Repository URL to build from')
@@ -37,7 +41,7 @@ pipeline {
 
         stage('Build JAR') {
             steps {
-                sh 'mvn clean package'  // Make sure this creates target/blog-0.0.1-SNAPSHOT.jar
+                sh 'mvn clean package'  // Maven should be available in this Docker container
             }
         }
 
