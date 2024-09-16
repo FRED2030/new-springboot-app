@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "vpc_id" {
   description = "The ID of the VPC where the ECS cluster will be deployed"    
   type        = string
-  default     = "vpc-0c5c888a629138221"
+  default     = "vpc-06f3b9a17927fefa2"
 }
 
 variable "subnet_ids" {
